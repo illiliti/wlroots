@@ -8,9 +8,14 @@
 #include <wlr/backend/session.h>
 #include <wlr/interfaces/wlr_tablet_pad.h>
 #include <wlr/types/wlr_input_device.h>
+#include <wlr/config.h>
 #include <wlr/util/log.h>
 #include "backend/libinput.h"
 #include "util/signal.h"
+
+#if WLR_HAS_UDEV
+#include <libudev.h>
+#endif
 
 // FIXME: Decide on how to alloc/count here
 static void add_pad_group_from_libinput(struct wlr_tablet_pad *pad,
@@ -84,9 +89,12 @@ struct wlr_tablet_pad *create_libinput_tablet_pad(
 	wlr_tablet_pad->strip_count =
 		libinput_device_tablet_pad_get_num_strips(libinput_dev);
 
+	// TODO
+#if WLR_HAS_UDEV
 	struct udev_device *udev = libinput_device_get_udev_device(libinput_dev);
 	char **dst = wl_array_add(&wlr_tablet_pad->paths, sizeof(char *));
 	*dst = strdup(udev_device_get_syspath(udev));
+#endif
 
 	int groups = libinput_device_tablet_pad_get_num_mode_groups(libinput_dev);
 	for (int i = 0; i < groups; ++i) {

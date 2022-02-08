@@ -9,10 +9,15 @@
 #include <wlr/backend/session.h>
 #include <wlr/interfaces/wlr_tablet_tool.h>
 #include <wlr/types/wlr_input_device.h>
+#include <wlr/config.h>
 #include <wlr/util/log.h>
 #include "backend/libinput.h"
 #include "util/array.h"
 #include "util/signal.h"
+
+#if WLR_HAS_UDEV
+#include <libudev.h>
+#endif
 
 static const struct wlr_tablet_impl tablet_impl;
 
@@ -77,9 +82,12 @@ struct wlr_tablet *create_libinput_tablet(
 	struct wlr_tablet *wlr_tablet = &libinput_tablet->wlr_tablet;
 	wlr_tablet_init(wlr_tablet, &tablet_impl);
 
+	// TODO
+#if WLR_HAS_UDEV
 	struct udev_device *udev = libinput_device_get_udev_device(libinput_dev);
 	char **dst = wl_array_add(&wlr_tablet->paths, sizeof(char *));
 	*dst = strdup(udev_device_get_syspath(udev));
+#endif
 
 	wlr_tablet->name = strdup(libinput_device_get_name(libinput_dev));
 
